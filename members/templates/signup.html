@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+  <div class="row">
+   
+      <div class="col-md-12">
+
+        
+        <h3 class="h3 mb-3 fw-normal">Please fill out the registration form</h3>
+        <form method="POST" action="{% url 'signup' %}">
+            {% csrf_token %}
+            {{ userform.as_p }}
+            {{ profileform.as_p }}
+            <button class="w-100 btn btn-lg btn-dark" type="submit">Register</button>
+        </form>
+
+
+      </div>
+
+  </div>
+</div>
+ <br></br>
+{% endblock %}
+
+
+
+

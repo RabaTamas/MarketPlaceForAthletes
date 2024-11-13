@@ -1,0 +1,325 @@
+{% extends 'base.html' %}
+
+
+{% block content %}
+
+<div class="row justify-content-center" >
+    <div class="col-sm-4 col-xl-3 overflow-hidden d-none d-sm-block">
+        <div class="d-flex flex-column align-items-stretch flex-shrink-0 bg-white border shadow" style="height: 100%;">
+            <a href="/" class="d-flex align-items-center flex-shrink-0 p-3 link-dark text-decoration-none border-bottom">
+              <span class="fs-5 fw-semibold"><i class="bi bi-chat-dots-fill"></i> Chats</span>
+            </a>
+            <div class="list-group list-group-flush border-bottom overflow-scroll" id="users-list">
+            </div>
+          </div>
+    </div>
+    <div class="col-sm-8 col-xl-9 border shadow">
+        <div class="container" style="height: 87vh">
+            <div class="container overflow-auto" id="chat_area" style="height: 90%"></div>
+            <p></p>
+
+            <div class="row" style="height: 0vh">
+                <div class="col-10">
+                    <textarea class="form-control" id="chat-message-input" aria-label="With textarea" rows="1", style="resize: none;"></textarea>
+                    </div>
+                    <div class="col-2">
+                    <button class="btn btn-outline-secondary" id="chat-message-submit" type="button">Send</button>
+                </div>  
+            </div>
+
+        </div>        
+    </div>
+</div>
+
+<script>
+    const chatSocket = new WebSocket(
+        'ws://'
+        + window.location.host
+        + '/ws/chat/'
+    );
+    
+    
+    $(document).ready(function() {
+        getChats();
+    });
+
+    let getChats = () => {
+        $.ajax({
+            type: 'GET',
+            data: {
+                "itempk": window.location.href.split("/").slice(-2,-1)[0]
+            },
+            url: "{% url 'get_chats' %}",
+            success: function(result) {
+                chats = JSON.parse(result.chats)
+                for(let [index, chat] of chats.entries()) {
+                    console.log(chat);
+                    if(index == 0) {
+                        createUserSidebarItem(chat, true);
+                        getChatContent(document.getElementsByClassName("chat-list-group-item")[0].id.split("_")[1]);
+                    } else {
+                        createUserSidebarItem(chat, false);
+                    }
+                }
+            }
+        })
+    }
+
+    let getChatContent = (chat_id) => {
+        console.log(chat_id);
+        $.ajax({
+            type: 'GET',
+            url: "{% url 'get_conversation' %}", 
+            data: {
+                chat_id: chat_id,
+            },                
+            success: function(result){
+                chat_area = document.getElementById("chat_area")
+                chat_area.innerText = "";
+                lastMessage = "";
+                for (let message of JSON.parse(result.messages)) {
+                    console.log((message));
+                    createMessageCard(message);
+                    lastMessage = message;                  
+                }
+                
+                if (lastMessage.isread && lastMessage.receiver.pk != '{{ request.user.pk }}') {
+                    let seenIndicator = document.createElement('div');
+                    seenIndicator.className = 'text-muted small text-end';
+                    seenIndicator.innerText = "Seen";
+                    chat_area.appendChild(seenIndicator);
+                }
+            }});
+    }
+    
+    let createMessageCard = (data) => {
+        console.log(data);
+        chat_area = document.getElementById("chat_area");
+
+        let row = document.createElement('div');
+        if(data.sender.pk == '{{ request.user.pk }}') {
+            row.className = 'row my-1 justify-content-end';
+        } else {
+            row.className = 'row my-1 justify-content-start';
+        }
+            
+
+        let col = document.createElement('div');
+        col.className = 'col-6'
+
+        let card = document.createElement('div');
+        if(data.sender.pk == '{{ request.user.pk }}') {
+            card.className = 'card text-white bg-primary mb-3';
+        } else {
+            card.className = 'card text-dark bg-light mb-3';
+        }
+        card.style = 'max-width: 18rem';
+        
+        let cardHeader = document.createElement('div');
+        cardHeader.className = "card-header";
+        cardHeader.innerText = data.sender.name;
+
+        let cardBody = document.createElement('div');
+        cardBody.className = 'card-body';
+        
+        let message_area = document.createElement("p");
+        message_area.innerText = data.message;
+
+        let isread_area = document.createElement("p");
+       
+        cardBody.appendChild(message_area);
+        card.appendChild(cardHeader);
+        card.appendChild(cardBody);
+        col.appendChild(card);
+        row.appendChild(col);
+        chat_area.appendChild(row)
+        chat_area.scrollBy(0,chat_area.scrollHeight);
+    }
+
+    let createUserSidebarItem = (chat, isactive) => {
+        usersList = document.getElementById('users-list');
+        let clickableListItem = document.createElement('a');
+        clickableListItem.className = 'list-group-item list-group-item-action py-3 lh-tight chat-list-group-item';
+        if(isactive) {
+            clickableListItem.classList.add("active");
+        }
+        clickableListItem.ariaCurrent = true;
+        clickableListItem.id = "chat_"+chat.pk;
+        clickableListItem.onclick = function () {
+            clickableListItems = document.getElementsByClassName("chat-list-group-item active");
+            
+            for(let item of clickableListItems) {
+                console.log("remove");
+                if(this.id != "chat_null") {
+                    try {
+                        document.getElementById("chat_null").remove();
+                    }
+                    catch { }
+                }
+                console.log(clickableListItems.length);
+                item.classList.remove("active");
+            }
+            this.classList.add("active");
+            let id = this.id.split("_")[1];
+            getChatContent(id);
+        }
+
+        let container = document.createElement('div');
+        container.className = 'd-flex w-100 align-items-center justify-content-between';
+        
+        let row = document.createElement('div');
+        row.className='row';
+        
+        let item_picture_container = document.createElement('div');
+        item_picture_container.className='col-2 align-items-center justify-content-between p-1'
+
+        let item_picture = document.createElement('img');
+        item_picture.src = chat.item.imagepath;
+        item_picture.style = "height: 40px";
+        item_picture.className = "rounded"
+
+        let text_container = document.createElement('div');
+        text_container.className='col-8';
+        
+        let itemName = document.createElement('strong');
+        itemName.innerText = chat.item.name;
+        itemName.id = chat.item.pk;
+        let partnerName = document.createElement('strong');
+        partnerName.className = 'mb-1';
+        if(chat.participant1.pk == '{{ request.user.pk }}') {
+            partnerName.innerText =  chat.participant2.name;
+            partnerName.id = chat.participant2.pk;
+        } else {
+            partnerName.innerText =  chat.participant1.name;
+            partnerName.id = chat.participant1.pk;
+        }        
+
+        let date = document.createElement("small");
+        date.className = "date"
+        date.innerText = dateTimeDiff(chat.last_message.timestamp);
+        date._variable = chat.last_message.timestamp;
+
+        let lastMessage = document.createElement('div');
+        lastMessage.className = 'col-10 mb-1 small message text-truncate d-none d-lg-block';
+        try{ 
+            lastMessage.innerText = chat.last_message.sender.name.split(" ")[0] + ": " + chat.last_message.message.replace(/(\r\n|\n|\r)/gm, "").substring(0, 20);
+        }catch{
+
+            lastMessage.innerText = "";
+        }
+       
+
+        item_picture_container.appendChild(item_picture);
+
+        text_container.appendChild(itemName);
+        text_container.appendChild(document.createElement("br"))
+        text_container.appendChild(partnerName);
+        text_container.appendChild(date);
+        text_container.appendChild(lastMessage);
+        
+                
+        row.appendChild(item_picture_container);
+        row.appendChild(text_container);
+
+        clickableListItem.appendChild(row);
+        usersList.appendChild(clickableListItem);
+    }
+
+    let updateSidebarItem = (data) => {
+        document.getElementById("chat_"+data.chat).getElementsByClassName("message")[0].innerText = data.sender.name.split(" ")[0]+": "+data.message;
+        document.getElementById("chat_"+data.chat).getElementsByClassName("date")[0].innerText = dateTimeDiff(data.timestamp);
+        document.getElementById("chat_"+data.chat).getElementsByClassName("date")[0]._variable = data.timestamp;
+    }
+
+    let dateTimeDiff = (datetime_data) => {
+        diff = new Date() - new Date(datetime_data);
+        seconds = parseInt(diff / 1000);
+        if(seconds == 0) {
+            return "Now";
+        }
+        minutes = parseInt(seconds / 60);
+        if(minutes == 0) {
+            return seconds+"s";
+        }
+        hours = parseInt(minutes / 60);
+        if(hours == 0) {
+            return minutes+"m";
+        }
+        days = parseInt(hours / 24);
+        if(days == 0) {
+            return hours+"h";
+        }
+        weeks = parseInt(days / 7);
+        if(weeks == 0) {
+            return days+"d";
+        }
+        if(weeks < 5) {
+            return weeks+"w";
+        }
+        return "more than a month";
+    }
+
+    let updateSidebarItemElapsedTime = () => {
+        try {
+            datesToUpdate = document.getElementsByClassName("date");
+            for(dateToUpdate of datesToUpdate) {
+                dateToUpdate.innerText = dateTimeDiff(dateToUpdate._variable);
+            }
+        } catch {
+
+        }
+        
+    }
+
+    setInterval(updateSidebarItemElapsedTime, 60000); 
+
+    updateSidebarItemsOrder = (message) => {
+        clickableListItem = document.getElementById("chat_"+message.chat);
+        userList = document.getElementById("users-list");
+        userList.insertBefore(clickableListItem, userList.firstChild);
+    }
+
+    chatSocket.onmessage = function(e) {
+        const data = JSON.parse(e.data);
+        console.log(e.data);
+        //document.querySelector('#chat-log').value += (data.message + " " + data.receiver + " " + data.sender + '\n');
+        updateSidebarItem(data);
+        updateSidebarItemsOrder(data);
+        if(document.getElementById("chat_"+data.chat).classList.contains("active")) {
+            createMessageCard(data);
+        }            
+        //document.querySelector('#message_area').value += (data.message + " " + data.receiver + " " + data.sender + '\n');
+    };
+
+    chatSocket.onclose = function(e) {
+        console.error('Chat socket closed unexpectedly');
+    };
+
+    document.querySelector('#chat-message-input').focus();
+    document.querySelector('#chat-message-input').onkeyup = function(e) {
+        if (e.keyCode === 13) {  // enter, return
+            document.querySelector('#chat-message-submit').click();
+        }
+    };
+
+    const isWhitespaceString = str => !str.replace(/\s/g, '').length;
+    
+    document.querySelector('#chat-message-submit').onclick = function(e) {
+        const messageInputDom = document.querySelector('#chat-message-input');
+        const message = messageInputDom.value;
+        console.log(message);
+        console.log(document.getElementsByClassName("chat-list-group-item active")[0].getElementsByTagName("strong")[1].id);
+        if(!isWhitespaceString(message)) {
+            chatSocket.send(JSON.stringify({
+                'item': document.getElementsByClassName("chat-list-group-item active")[0].getElementsByTagName("strong")[0].id,
+                'sender': '{{ sender }}',
+                'receiver': document.getElementsByClassName("chat-list-group-item active")[0].getElementsByTagName("strong")[1].id,
+                'message': message
+            }));
+            messageInputDom.value = '';
+        }
+    };
+
+</script>
+
+{% endblock %}

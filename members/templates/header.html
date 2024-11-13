@@ -1,0 +1,24 @@
+<header class="header text-center text-white py-5">
+    <div class="container px-4 px-lg-5 my-5 d-flex align-items-center justify-content-center" style="height: 100%;">
+        <div>
+            <h1 class="display-4 fw-bolder">Fuel Your Fitness Journey</h1>
+            <p class="lead fw-normal text-white-50 mb-0">Discover the best deals and gear for athletes, all in one place</p>
+        </div>
+    </div>
+</header>
+
+<script>
+  const images = JSON.parse('{{ images|safe }}');
+  
+  let currentIndex = 0;
+  const header = document.querySelector('.header');
+
+  function changeBackground() {
+    header.style.backgroundImage = `url(${images[currentIndex]})`;
+    currentIndex = (currentIndex + 1) % images.length;
+  }
+
+  changeBackground();
+  setInterval(changeBackground, 5000);
+</script>
+

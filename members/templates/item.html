@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block content %}
+        
+        
+        <section class="py-5">
+            <div class="container px-4 px-lg-5 my-5">
+                <div class="row gx-4 gx-lg-5 align-items-center">
+                    <div class="col-md-6"><img class="card-img-top mb-5 mb-md-0" src="{{ item.image.url }}" alt="..." /></div>
+                    <div class="col-md-6">
+                        <h1 class="display-5 fw-bolder">{{ item.name }}</h1>
+                        <div class="fs-5 mb-5">
+                            <p>{{ item.price }} Ft</p>
+                            <p>Condition: {{ item.condition }}</p>
+                        </div>
+                        <p class="lead" style="overflow-wrap: break-word; word-break: normal;">{{ item.description }}</p>
+
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'room' item.id %}" class="btn btn-dark">Contacting the advertiser</a>
+                        {% else %}
+                        <p class="text-danger">Login is required to contact the advertiser</p>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </section>
+        <!-- Related items section-->
+        <section class="py-5 bg-light">
+            <div class="container px-4 px-lg-5 mt-5">
+                <h2 class="fw-bolder mb-4">Related items</h2>
+                <div class="row gx-4 gx-lg-5 row-cols-2 row-cols-md-3 row-cols-xl-4 justify-content-center">
+                    {% for related_item in related_items %}
+                    <div class="col mb-5">
+                        <div class="card h-100">
+                            <!-- Product image-->
+                            <img class="card-img-top" src="{{ related_item.image.url }}" style="width: 100%; height: 200px; object-fit: cover;" alt="..." />
+                            <!-- Product details-->
+                            <div class="card-body p-4">
+                                <div class="text-center">
+                                    <!-- Product name-->
+                                    <h5 class="fw-bolder">{{ related_item.name }}</h5>
+                                    <!-- Product condition-->
+                                    <p>{{ related_item.condition }}</p>
+                                    <!-- Product price-->
+                                    <p>{{ related_item.price }} Ft</p>
+                                </div>
+                            </div>
+                            <!-- Product actions-->
+                            <div class="card-footer p-0 bg-transparent">
+                                <div class="text-center w-100">
+                                    <a class="btn btn-outline-dark w-100 h-100" href="{% url 'item' related_item.id %}">View</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <p>No related items found.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+      
+{% endblock %} 

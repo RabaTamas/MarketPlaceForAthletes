@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <h3 class="h3 mb-3 fw-normal">Edit Item: {{ item.name }}</h3>
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+
+        {{ form.as_p }}
+
+        <!-- Display current image if exists -->
+        {% if item.image %}
+        <p>Current Image:</p>
+        <img src="{{ item.image.url }}" alt="Current Image" style="max-width: 200px;">
+        <p>If you want to upload a new image, select a new file!</p>
+        {% endif %}
+
+        <!-- Buttons -->
+        <div class="d-flex justify-content-start align-items-center">
+            <button type="submit" class="btn btn-dark me-3">Save Changes</button>
+            <a href="{% url 'my_ads' %}" class="btn btn-dark">Back to My Ads</a>
+        </div>
+    </form>
+</div>
+<br></br>
+{% endblock %}

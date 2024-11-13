@@ -1,0 +1,57 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container">
+    <div class="col-12">
+        <div class="d-flex justify-content-between mt-3">
+            <h3 class="h3 mb-3 fw-normal">My Ads</h3>
+            <div>
+                <button type="submit" form="delete-form" class="btn btn-danger" title="Delete Selected">
+                    <i class="bi bi-trash"></i>
+                </button>
+                
+                <a href="{% url 'addlisting' %}" class="btn btn-dark me-2">Add New</a>
+            </div>
+        </div>
+        
+        <form id="delete-form" method="POST" action="{% url 'my_ads' %}">
+            {% csrf_token %}
+
+            {% if user_items %}
+            <br></br>
+            <div class="row fw-bold mb-2">
+                <div class="col-2">Image</div>
+                <div class="col-6">Name</div>
+                <div class="col-2">Price</div>
+                <div class="col-2 text-end">Delete</div>
+            </div>
+
+            <hr>
+
+            {% for item in user_items %}
+            <div class="row align-items-center mb-2">
+                <div class="col-2">
+                    <img src="{{ item.image.url }}" alt="{{ item.name }}" class="img-fluid" style="max-width: 100px;" />
+                </div>
+                <div class="col-6">
+                    <a href="{% url 'edit_item' item.id %}">
+                        <h5 class="mb-1">{{ item.name }}</h5>
+                    </a>
+                </div>
+                <div class="col-2">
+                    <p class="mb-1">{{ item.price }} Ft</p>
+                </div>
+                <div class="col-2 text-end">
+                    <input type="checkbox" name="item_ids" value="{{ item.id }}" class="form-check-input">
+                </div>
+            </div>
+            {% endfor %}
+
+           
+            {% else %}
+            <p>You have no ads yet.</p>
+            {% endif %}
+        </form>
+    </div>
+</div>
+{% endblock %}

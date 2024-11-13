@@ -1,0 +1,25 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<div class="container">
+    <div class="row">
+     
+        <div class="col-md-12">
+  
+            <br></br>
+          <h3 class="h3 mb-3 fw-normal">Item adding form</h3>
+          <form method="POST" action="{% url 'addlisting' %}" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ listingform.as_p }}
+            <button type="submit" class="btn btn-dark">Submit</button>
+          </form>
+          <br></br>
+  
+        </div>
+  
+    </div>
+</div>
+
+{% endblock %}
+

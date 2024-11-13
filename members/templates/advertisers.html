@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block content %}
+    <!-- Header-->
+    {% include 'header.html' %}
+    <!-- Main Section -->
+    <section class="py-5">
+        <div class="container px-4 px-lg-5 mt-5">
+            <div class="row">
+                <!-- Search and Sort -->
+                <div class="col-md-3">
+                    <form method="get" action="{% url 'advertisers' %}">
+                        <h5>Search</h5>
+                        <div class="input-group">
+                            <input type="text" class="form-control" placeholder="Search advertisers..." name="search" value="{{ request.GET.search }}">
+                            <button class="bi bi-search" type="submit"></button>
+                        </div>
+
+                        <h5>Sort</h5>
+                        <select name="sort" class="form-control mt-3" onchange="this.form.submit()">
+                            <option value="">Choose...</option>
+                            <option value="name_asc" {% if sort_option == 'name_asc' %}selected{% endif %}>Name (A-Z)</option>
+                            <option value="name_desc" {% if sort_option == 'name_desc' %}selected{% endif %}>Name (Z-A)</option>
+                            <option value="score_asc" {% if sort_option == 'score_asc' %}selected{% endif %}>Score (Low to High)</option>
+                            <option value="score_desc" {% if sort_option == 'score_desc' %}selected{% endif %}>Score (High to Low)</option>
+                        </select>
+                    </form>
+                </div>
+
+                <!-- Advertisers List with Accordion -->
+                <div class="col-md-9">
+                    <div class="accordion" id="advertisersAccordion">
+                        {% for advertiser in advertisers %}
+                        <div class="accordion-item">
+                            <h2 class="accordion-header" id="heading-{{ advertiser.user.id }}">
+                                <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-{{ advertiser.user.id }}" aria-expanded="false" aria-controls="collapse-{{ advertiser.user.id }}">
+                                    <strong>{{ advertiser.user.get_full_name }}</strong> - Average Score: {{ advertiser.average_score|default:"No scores yet" }}
+                                </button>
+                            </h2>
+                            <div id="collapse-{{ advertiser.user.id }}" class="accordion-collapse collapse" aria-labelledby="heading-{{ advertiser.user.id }}" data-bs-parent="#advertisersAccordion">
+                                <div class="accordion-body">
+                                    <strong>Bio:</strong>
+                                    <p style="overflow-wrap: break-word; word-break: normal;"> {{ advertiser.bio|default:"No bio available" }}</p>
+
+                                    <!-- Display Items as Horizontally Scrollable Images -->
+                                    <strong>Advertisements:</strong> 
+                                    {% if advertiser.items.exists %}
+                                        <div class="item-slider" style="overflow-x: scroll; white-space: nowrap;">
+                                            {% for item in advertiser.items.all %}
+                                                {% if not item.sold %}
+                                                    <a href="{% url 'item' item.id %}" style="display: inline-block; margin-right: 10px;">
+                                                        <img src="{{ item.image.url }}" alt="{{ item.name }}" style="width: 100px; height: auto; border-radius: 5px;">
+                                                    </a>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                    {% else %}
+                                        No items available
+                                    {% endif %}
+
+                                    <!-- Score Form -->
+                                    {% if user.is_authenticated and user != advertiser.user %}
+                                        <form action="{% url 'add_score' advertiser.user.id %}" method="post" class="mt-3">
+                                            {% csrf_token %}
+                                            {{ form.score }}
+                                            <button type="submit" class="btn btn-dark mt-2">
+                                                {% if user_scores.advertiser.user.id %}
+                                                    Update Score
+                                                {% else %}
+                                                    Add New Score
+                                                {% endif %}
+                                            </button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        {% if advertisers.has_other_pages %}
+                        <nav aria-label="Page navigation">
+                            <ul class="pagination justify-content-center mt-4">
+                                {% if advertisers.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link bg-dark text-white" href="?page={{ advertisers.previous_page_number }}&search={{ request.GET.search }}&sort={{ sort_option }}" aria-label="Previous">
+                                            <span aria-hidden="true">&laquo;</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                                {% for num in advertisers.paginator.page_range %}
+                                    <li class="page-item {% if advertisers.number == num %}active{% endif %}">
+                                        <a class="page-link bg-dark text-white" href="?page={{ num }}&search={{ request.GET.search }}&sort={{ sort_option }}">{{ num }}</a>
+                                    </li>
+                                {% endfor %}
+                                {% if advertisers.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link bg-dark text-white" href="?page={{ advertisers.next_page_number }}&search={{ request.GET.search }}&sort={{ sort_option }}" aria-label="Next">
+                                            <span aria-hidden="true">&raquo;</span>
+                                        </a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                        {% endif %}
+
+
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Optional JavaScript for smooth scroll -->
+    <script>
+        document.querySelectorAll('.item-slider').forEach(function(slider) {
+            slider.addEventListener('wheel', function(event) {
+                event.preventDefault();
+                slider.scrollBy({
+                    left: event.deltaY < 0 ? -30 : 30,
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+{% endblock %}
