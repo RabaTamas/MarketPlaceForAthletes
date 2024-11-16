@@ -14,7 +14,7 @@ from django.contrib.auth.models import User
 
 from django.db.models.signals import post_save
 from channels.layers import get_channel_layer
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 
 class ChatConsumer(WebsocketConsumer):
     def connect(self):
@@ -45,7 +45,7 @@ class ChatConsumer(WebsocketConsumer):
         participant2 = receiver
         print(text_data_json['item'])
         chat = Chat.GetChatByParticipants(participant1, participant2, item, True) #None
-        
+        chat.lastupdated = datetime.now(timezone(timedelta(hours=1)))
         message_string = text_data_json["message"]
         
         ChatMessage.objects.create(
@@ -53,7 +53,7 @@ class ChatConsumer(WebsocketConsumer):
             sender = sender,
             receiver = receiver,
             content = message_string,
-            timestamp = datetime.now()
+            timestamp = datetime.now(timezone(timedelta(hours=1)))
         )
 
             

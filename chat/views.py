@@ -18,7 +18,9 @@ def getChats(request):
     output = []
     try:
         item = Item.objects.filter(pk = request.GET["itempk"]).first()
-        if not Chat.GetChatByItem(item):
+        
+        if not Chat.GetChatByItemAndParticipant(item, participant = request.user):
+            print(request.GET["itempk"])
             empty_chat = Chat.GetChatByParticipants(request.user, item.advertiser.user, item, False)
             output.append({
                 "pk": empty_chat.pk,
@@ -27,7 +29,9 @@ def getChats(request):
                 "participant2": {"pk": empty_chat.participant2.pk, "name": f"{empty_chat.participant2.first_name} {empty_chat.participant2.last_name}"},
                 "last_message": ""
             })
-    except:
+    except Exception as e:
+        # import traceback
+        # print(traceback.format_exc(e))
         pass
     for chat in chats:
         message = chat.GetMessages().last()

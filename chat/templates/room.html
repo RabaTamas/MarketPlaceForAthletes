@@ -193,12 +193,13 @@
             partnerName.innerText =  chat.participant1.name;
             partnerName.id = chat.participant1.pk;
         }        
-
         let date = document.createElement("small");
-        date.className = "date"
-        date.innerText = dateTimeDiff(chat.last_message.timestamp);
-        date._variable = chat.last_message.timestamp;
-
+        if(chat.last_message != ""){
+           
+            date.className = "date"
+            date.innerText = dateTimeDiff(chat.last_message.timestamp);
+            date._variable = chat.last_message.timestamp;
+        }
         let lastMessage = document.createElement('div');
         lastMessage.className = 'col-10 mb-1 small message text-truncate d-none d-lg-block';
         try{ 
@@ -283,11 +284,17 @@
         const data = JSON.parse(e.data);
         console.log(e.data);
         //document.querySelector('#chat-log').value += (data.message + " " + data.receiver + " " + data.sender + '\n');
-        updateSidebarItem(data);
-        updateSidebarItemsOrder(data);
-        if(document.getElementById("chat_"+data.chat).classList.contains("active")) {
-            createMessageCard(data);
-        }            
+        try{
+            updateSidebarItem(data);
+            updateSidebarItemsOrder(data);
+            if(document.getElementById("chat_"+data.chat).classList.contains("active")) {
+                createMessageCard(data);
+            } 
+        }catch{
+            document.getElementById("users-list").innerHTML="";
+            getChats();
+        }
+                   
         //document.querySelector('#message_area').value += (data.message + " " + data.receiver + " " + data.sender + '\n');
     };
 

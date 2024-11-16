@@ -10,9 +10,12 @@ class Chat(models.Model):
     participant1 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="participant1")
     item = models.ForeignKey(Item,on_delete=models.CASCADE, related_name="item" )
     participant2 = models.ForeignKey(User, on_delete=models.CASCADE, related_name="participant2")
+    lastupdated = models.DateTimeField(auto_now = True)
     
     class Meta:
         UniqueConstraint(fields=["participant1", "participant2", "item"], name="participants_item_unique_together")
+
+        ordering = ['-lastupdated']
 
     @staticmethod
     def GetChatByParticipants(participant1, participant2, item, saveifnotexists = True):
@@ -30,8 +33,9 @@ class Chat(models.Model):
         return Chat.objects.filter(participant1 = participant) | Chat.objects.filter(participant2 = participant)
     
     @staticmethod
-    def GetChatByItem(item):
-        return Chat.objects.filter(item = item)
+    def GetChatByItemAndParticipant(item, participant):
+        return Chat.objects.filter(participant1 = participant, item = item) | Chat.objects.filter(participant2 = participant, item = item)
+        #return Chat.objects.filter(item = item)
 
     @staticmethod
     def GetChatById(id):
