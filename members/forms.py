@@ -96,7 +96,8 @@ class CreateListingForm(forms.ModelForm):
         label="Upload Image", 
         widget=forms.FileInput(attrs={
             'class': 'form-control'
-        })
+        }),
+        required=False
     )
 
     class Meta:
@@ -105,9 +106,12 @@ class CreateListingForm(forms.ModelForm):
 
     def clean_price(self):
         price = self.cleaned_data.get('price')
-        if price is not None and price < 0:
+        if price is not None and price <= 0:
             raise forms.ValidationError("Price cannot be negative. Please enter a valid amount.")
         return price
+    
+    # def __init__(self):
+    #     super(CreateListingForm, self).__init__()
     
 
 class EditListingForm(forms.ModelForm):
@@ -164,7 +168,7 @@ class EditListingForm(forms.ModelForm):
 
     def clean_price(self):
         price = self.cleaned_data.get('price')
-        if price is not None and price < 0:
+        if price is not None and price <= 0:
             raise forms.ValidationError("Price cannot be negative. Please enter a valid amount.")
         return price
     

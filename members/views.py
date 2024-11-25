@@ -154,6 +154,7 @@ def createlisting(request):
             return redirect("my_ads")
         else:
             messages.error(request, 'Error happened while you were uploading a new item!')
+            print(itemform.errors)
     listingform = CreateListingForm()
     return render(request, "additem.html", {"listingform": listingform})
 
@@ -199,6 +200,7 @@ def my_profile(request):
             return redirect('my_profile')
         else:
             messages.error(request, "An error occurred. Please try again.")
+            print(user_form.errors, profile_form.errors)
     
     user_form = UserEditForm(instance=user)
     profile_form = ProfileSignUpForm(instance=profile)

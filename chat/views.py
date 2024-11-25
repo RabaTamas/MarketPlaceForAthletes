@@ -35,12 +35,20 @@ def getChats(request):
         pass
     for chat in chats:
         message = chat.GetMessages().last()
-        last_message = {
-            "message": message.content,
-            "receiver": {"pk": message.receiver.pk, "name": f"{message.receiver.first_name} {message.receiver.last_name}"},
-            "sender": {"pk": message.sender.pk, "name": f"{message.sender.first_name} {message.sender.last_name}"},
-            "timestamp": str(message.timestamp)
-        }
+        # last_message = {
+        #     "message": message.content,
+        #     "receiver": {"pk": message.receiver.pk, "name": f"{message.receiver.first_name} {message.receiver.last_name}"},
+        #     "sender": {"pk": message.sender.pk, "name": f"{message.sender.first_name} {message.sender.last_name}"},
+        #     "timestamp": str(message.timestamp)
+        # }
+        last_message = None
+        if message:
+            last_message = {
+                "message": message.content,
+                "receiver": {"pk": message.receiver.pk, "name": f"{message.receiver.first_name} {message.receiver.last_name}"},
+                "sender": {"pk": message.sender.pk, "name": f"{message.sender.first_name} {message.sender.last_name}"},
+                "timestamp": str(message.timestamp)
+            }
         output.append({
             "pk": chat.pk,
             "item": {"pk": chat.item.pk, "name": f"{chat.item.name}", "imagepath": f"{chat.item.image.url}"},
