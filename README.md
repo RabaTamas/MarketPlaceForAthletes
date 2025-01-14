@@ -5,7 +5,7 @@ However, many of these services are designed for a wide, general audience, which
 The purpose of my thesis is to create a marketplace specifically for athletes. My thesis details the development process of a web application built on Python and Django, aimed at fulfilling these specific needs.
 
 # Technologies Used:
-Python, WebSocket, Django, JSON, JavaScript, AJAX, HTML, CSS, Bootstrap, SQLIte
+Python, WebSocket, Django, JSON, JavaScript, AJAX, HTML, CSS, Bootstrap, SQLite
 
 # Few pics about the market place:
 ![](chat.png)
