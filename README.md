@@ -7,6 +7,9 @@ The purpose of my thesis is to create a marketplace specifically for athletes. M
 # Technologies Used:
 Python, WebSocket, Django, JSON, JavaScript, AJAX, HTML, CSS, Bootstrap, SQLite, Pytest, Coverage
 
+# The document of my thesis:
+![](Szakdolgozat.pdf)
+
 # Few pics about the market place:
 ![](chat.png)
 ![](home.png)
